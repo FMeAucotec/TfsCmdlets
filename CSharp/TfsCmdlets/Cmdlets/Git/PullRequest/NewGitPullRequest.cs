@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 namespace TfsCmdlets.Cmdlets.PullRequest
 {
     /// <summary>
-    /// Creates a new work item.
+    /// Creates a new pull request.
     /// </summary>
     [TfsCmdlet(CmdletScope.Project, SupportsShouldProcess = true, OutputType = typeof(GitPullRequest))]
     partial class NewGitPullRequest
@@ -30,14 +30,14 @@ namespace TfsCmdlets.Cmdlets.PullRequest
         public string Description { get; set; }
 
         /// <summary>
-        /// Specifies the name of the new repository
+        /// Specifies the name of the source branch 
         /// </summary>
         [Parameter(Mandatory = true)]
         public string SourceBranch { get; set; }
 
 
         /// <summary>
-        /// Specifies the name of the new repository
+        /// Specifies the name of the target branch
         /// </summary>
         [Parameter(Mandatory = true)]
         public string TargetBranch { get; set; }

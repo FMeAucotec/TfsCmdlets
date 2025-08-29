@@ -7,7 +7,7 @@ using Microsoft.TeamFoundation.SourceControl.WebApi;
 namespace TfsCmdlets.Cmdlets.WorkItem.Linking
 {
     /// <summary>
-    /// Adds a link between two work items.
+    /// Adds a link from a work item to a pull request.
     /// </summary>
     [TfsCmdlet(CmdletScope.Collection)]
     partial class AddPullRequestLink
@@ -21,7 +21,7 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
         public object WorkItem { get; set; }
 
         /// <summary>
-        /// Specifies the work item to link to.
+        /// Specifies the pull request to link to.
         /// </summary>
         [Parameter(Position = 1, Mandatory = true, ParameterSetName = "Link to work item")]
         [Alias("To")]

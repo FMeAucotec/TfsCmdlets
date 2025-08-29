@@ -5,9 +5,10 @@
     <RootNamespace>TfsCmdlets</RootNamespace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <LangVersion>11.0</LangVersion>
-    <DocumentationFile>$(TargetPath)\TfsCmdlets.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
     <NoWarn>1591</NoWarn>
     <LangVersion>preview</LangVersion>
+      <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -36,7 +37,7 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.*-*" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.*" />
     <PackageReference Include="Microsoft.Identity.Client.Desktop" Version="4.*" />
-    <PackageReference Include="DotNet.Glob" Version="3.1.*"/>
+    <PackageReference Include="DotNet.Glob" Version="3.1.*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">

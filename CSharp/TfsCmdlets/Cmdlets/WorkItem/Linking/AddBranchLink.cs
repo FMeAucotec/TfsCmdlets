@@ -7,7 +7,7 @@ using Microsoft.TeamFoundation.SourceControl.WebApi;
 namespace TfsCmdlets.Cmdlets.WorkItem.Linking
 {
     /// <summary>
-    /// Adds a link between two work items.
+    /// Adds a link from a work item to a branch.
     /// </summary>
     [TfsCmdlet(CmdletScope.Collection)]
     partial class AddBranchLink

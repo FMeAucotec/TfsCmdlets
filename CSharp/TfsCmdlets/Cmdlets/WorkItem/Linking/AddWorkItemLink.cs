@@ -71,7 +71,6 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
         protected override IEnumerable Run()
         {
             {
-                string targetURL = "";
                 string relStr = "";
 
                 var sourceWi = Data.GetItem<WebApiWorkItem>();
@@ -89,11 +88,7 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
                     relStr = KnownLinkTypes.GetReferenceName(linkType);
                 }
 
-      
-            
                 var targetWi = Data.GetItem<WebApiWorkItem>(new { WorkItem = Parameters.Get<object>(nameof(AddWorkItemLink.TargetWorkItem)) });
-                targetURL = targetWi.Url;
-             
 
                 var runId = Guid.NewGuid();
 
@@ -108,7 +103,7 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
                         Path = "/relations/-",
                         Value = new WebApiWorkItemRelation() {
                             Rel = relStr,
-                            Url = targetURL,
+                            Url = targetWi.Url,
                            
                             Attributes = new Dictionary<string,object>() {
                                 ["comment"] = Parameters.Get<string>(nameof(AddWorkItemLink.Comment), string.Empty),
@@ -124,8 +119,8 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
                     .GetResult("Error updating target work item");
 
                 return result.Relations.Where(r => 
-                    r.Url == targetURL && 
-                    r.Rel == KnownLinkTypes.GetReferenceName(linkType)
+                    r.Url == targetWi.Url && 
+                    r.Rel == relStr
                 ).ToList();
             }
         }
