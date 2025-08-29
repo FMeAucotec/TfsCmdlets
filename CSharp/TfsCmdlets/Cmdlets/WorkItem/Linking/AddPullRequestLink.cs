@@ -10,7 +10,7 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
     /// Adds a link between two work items.
     /// </summary>
     [TfsCmdlet(CmdletScope.Collection)]
-    partial class AddWorkItemLink
+    partial class AddPullRequestLink
     {
         /// <summary>
         /// Specifies the work item to link from.
@@ -26,14 +26,13 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
         [Parameter(Position = 1, Mandatory = true, ParameterSetName = "Link to work item")]
         [Alias("To")]
         [ValidateNotNull()]
-        public object TargetWorkItem { get; set; }
+        public object PullRequest { get; set; }
 
         /// <summary>
-        /// Specifies the type of the link to create.
+        /// HELP_PARAM_GIT_REPOSITORY
         /// </summary>
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = "Link to work item")]
-        [Alias("EndLinkType", "Type")]
-        public object LinkType { get; set; }
+        [Parameter(ValueFromPipeline = true)]
+        public object Repository { get; set; }
 
         /// <summary>
         /// HELP_PARAM_PASSTHRU
@@ -62,8 +61,8 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
         public string Comment { get; set; }
     }
 
-    [CmdletController(typeof(WebApiWorkItemRelation), Client=typeof(IWorkItemTrackingHttpClient))]
-    partial class AddWorkItemLinkController
+    [CmdletController(typeof(WebApiWorkItemRelation), Client = typeof(IWorkItemTrackingHttpClient))]
+    partial class AddPullRequestLinkController
     {
         [Import]
         private IKnownWorkItemLinkTypes KnownLinkTypes { get; set; }
@@ -71,30 +70,29 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
         protected override IEnumerable Run()
         {
             {
-                string targetURL = "";
-                string relStr = "";
-
                 var sourceWi = Data.GetItem<WebApiWorkItem>();
-                var linkType = Parameters.Get<WorkItemLinkType>(nameof(AddWorkItemLink.LinkType));
-                if(WorkItemLinkType.All == linkType)
+                string targetURL = "";
+
+                if(PullRequest is int)
                 {
-                    var olinkType = Parameters.Get<object>(nameof(AddWorkItemLink.LinkType));
-                    if(olinkType is string)
+                    if(Parameters.Get<object>(nameof(Repository)) == null)
                     {
-                        relStr = olinkType as string;
+                        throw new ArgumentException("Specify Pullrequest as object or provide repository.");
                     }
+
+                    var pr = GetItem<GitPullRequest>(new { PullRequest, Repository = Parameters.Get<object>(nameof(Repository)) });
+                    targetURL = pr.ArtifactId;
+
+
                 }
-                else 
+                else
                 {
-                    relStr = KnownLinkTypes.GetReferenceName(linkType);
+                    var targetWi = (GitPullRequest)Parameters.Get<object>(nameof(PullRequest));
+                    targetURL = targetWi.ArtifactId;
                 }
+         
 
-      
-            
-                var targetWi = Data.GetItem<WebApiWorkItem>(new { WorkItem = Parameters.Get<object>(nameof(AddWorkItemLink.TargetWorkItem)) });
-                targetURL = targetWi.Url;
-             
-
+               
                 var runId = Guid.NewGuid();
 
                 var patch = new JsonPatchDocument() {
@@ -107,25 +105,25 @@ namespace TfsCmdlets.Cmdlets.WorkItem.Linking
                         Operation = Operation.Add,
                         Path = "/relations/-",
                         Value = new WebApiWorkItemRelation() {
-                            Rel = relStr,
+                            Rel = KnownLinkTypes.GetReferenceName(WorkItemLinkType.ArtifactLink),
                             Url = targetURL,
-                           
+
                             Attributes = new Dictionary<string,object>() {
                                 ["comment"] = Parameters.Get<string>(nameof(AddWorkItemLink.Comment), string.Empty),
-                         
+                                ["name"] = "Pull Request"
                             }
                         }
                    }
                 };
 
-                var result = Client.UpdateWorkItemAsync(patch, (int)sourceWi.Id, 
-                        bypassRules: BypassRules, 
+                var result = Client.UpdateWorkItemAsync(patch, (int)sourceWi.Id,
+                        bypassRules: BypassRules,
                         suppressNotifications: SuppressNotifications)
                     .GetResult("Error updating target work item");
 
-                return result.Relations.Where(r => 
-                    r.Url == targetURL && 
-                    r.Rel == KnownLinkTypes.GetReferenceName(linkType)
+                return result.Relations.Where(r =>
+                    r.Url == targetURL &&
+                    r.Rel == KnownLinkTypes.GetReferenceName(WorkItemLinkType.ArtifactLink)
                 ).ToList();
             }
         }
