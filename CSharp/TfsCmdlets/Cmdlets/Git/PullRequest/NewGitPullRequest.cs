@@ -48,6 +48,12 @@ namespace TfsCmdlets.Cmdlets.PullRequest
         [Parameter(ValueFromPipeline = true, Mandatory = true)]
         public object Repository { get; set; }
 
+
+        /// <summary>
+        /// If set set pullrequest to  autocomplete
+        /// </summary>
+        [Parameter()]
+        public SwitchParameter SetAutoComplete { get; set; }
     }
 
     [CmdletController(typeof(GitPullRequest), Client=typeof(IGitHttpClient))]
@@ -78,7 +84,7 @@ namespace TfsCmdlets.Cmdlets.PullRequest
             var result = Client.CreatePullRequestAsync(reqToCreate, Project.Id, repo.Id)
                 .GetResult("Error creating pull request");
 
-            if (true) // toggle by param
+            if (SetAutoComplete) // toggle by param
             {
                 var reqToUpdate = new GitPullRequest
                 {
