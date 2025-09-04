@@ -54,6 +54,20 @@ namespace TfsCmdlets.Cmdlets.PullRequest
         /// </summary>
         [Parameter()]
         public SwitchParameter SetAutoComplete { get; set; }
+
+        /// <summary>
+        /// pullrequest  autocomplete merge strategy (default == Squash)
+        /// </summary>
+        [Parameter()]
+        public  GitPullRequestMergeStrategy MergeStrategy  { get; set; } = GitPullRequestMergeStrategy.Squash;
+
+        /// <summary>
+        /// If true delete source branch after merge  (default == false)
+        /// </summary>
+        [Parameter()]
+        public bool DeleteSourceBranch { get; set; } = false;
+
+
     }
 
     [CmdletController(typeof(GitPullRequest), Client=typeof(IGitHttpClient))]
@@ -65,7 +79,9 @@ namespace TfsCmdlets.Cmdlets.PullRequest
         { 
             var Links = new Microsoft.VisualStudio.Services.WebApi.ReferenceLinks();
             //Links.AddLinkIfIsNotEmpty(,)
-
+            var mergeStrategy = Parameters.Get<GitPullRequestMergeStrategy>(nameof(NewGitPullRequest.MergeStrategy));
+            
+            
             if (!PowerShell.ShouldProcess(Project, $"Create new pull request")) yield break;
 
             var repo = GetItem<GitRepository>(new { Repository, Default = false });
@@ -73,7 +89,11 @@ namespace TfsCmdlets.Cmdlets.PullRequest
             {
                 Title = Title,
                 Description = Description,
-                CompletionOptions  = new GitPullRequestCompletionOptions { MergeStrategy = GitPullRequestMergeStrategy.Squash, DeleteSourceBranch = true},
+                CompletionOptions  = new GitPullRequestCompletionOptions 
+                { 
+                    MergeStrategy = GitPullRequestMergeStrategy.Squash, 
+                    DeleteSourceBranch = this.DeleteSourceBranch
+                },
                 SourceRefName = "refs/heads/" + SourceBranch,
                 TargetRefName = "refs/heads/" + TargetBranch,
                 Repository = repo,
@@ -91,8 +111,8 @@ namespace TfsCmdlets.Cmdlets.PullRequest
                     AutoCompleteSetBy = result.CreatedBy,
                     CompletionOptions = new GitPullRequestCompletionOptions
                     {
-                        MergeStrategy = GitPullRequestMergeStrategy.Squash,
-                        DeleteSourceBranch = true
+                        MergeStrategy = mergeStrategy,
+                        DeleteSourceBranch = this.DeleteSourceBranch
                     }
 
                 };
